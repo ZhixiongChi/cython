@@ -76,9 +76,14 @@ def generate_shared_module(options):
     context = Main.Context.from_options(options)
     scope = Symtab.ModuleScope('MemoryView', parent_module = None, context = context, is_package=False)
 
+    fixed_tmp_link = "/tmp/cython_shared"
+
     with tempfile.TemporaryDirectory() as tmpdirname:
-        pyx_file = os.path.join(tmpdirname, f'{module_name}.pyx')
-        c_file = os.path.join(tmpdirname, f'{module_name}.c')
+        if os.path.exists(fixed_tmp_link) or os.path.islink(fixed_tmp_link):
+            os.unlink(fixed_tmp_link)
+        os.symlink(tmpdirname, fixed_tmp_link)
+        pyx_file = os.path.join(fixed_tmp_link, f'{module_name}.pyx')
+        c_file = os.path.join(fixed_tmp_link, f'{module_name}.c')
         with open(pyx_file, 'w'):
             pass
         source_desc = FileSourceDescriptor(pyx_file)
